@@ -25,15 +25,22 @@ client.start()
 group = client.get_entity(PeerChannel(GROUP_CHAT_ID))
 
 file = open('dump.json','w')
+file.write('[\n')
 message_id = 0
 media_id = 0
+first = True
 for event in client.iter_admin_log(group):
     if event.deleted_message:
         print(f'dump<message={message_id},event.old.id={event.old.id},event.old.date={event.old.date},event.action.message.id={event.action.message.id}>')
-        file.write(event.old.to_json() + ',') 
+        if not first:
+            file.write(',')
+        first = False
+        file.write(event.old.to_json())
         message_id += 1
         if event.old.media:
             media_id += 1
             client.download_media(event.old.media, str(event.old.id))
             print(f'dump<media={media_id}>')
+        file.write('\n')
         time.sleep(0.1)
+file.write(']\n')
